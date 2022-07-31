@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UniRx;
 
 
 namespace s02
@@ -11,6 +12,9 @@ namespace s02
     {
         [SerializeField] GameObject m_point;
         [SerializeField] Text m_text;
+
+        [SerializeField] GameObject m_target;
+
 
         // Start is called before the first frame update
         void Start()
@@ -25,6 +29,16 @@ namespace s02
             pt = ret2;
             m_text.text = string.Format("pt = {0},{1},{2}", pt.x.ToString(FM), pt.y.ToString(FM), pt.z.ToString(FM));
             m_point.transform.localPosition = pt;
+
+        }
+
+
+
+
+        private void Update()
+        {
+          //  Dump(m_target);
+
         }
 
         Vector3 test03_ZXY(Vector3 pt)
