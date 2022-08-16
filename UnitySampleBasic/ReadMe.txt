@@ -15,3 +15,7 @@ https://light11.hatenadiary.com/entry/2019/01/24/223705
 
 06  カメラコントール
 07:  projection matrix をシェーダへ送る
+
+
+08: Unity3d数学の本
+09: Local2World
