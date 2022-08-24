@@ -42,7 +42,7 @@ namespace s09
             //    ).AddTo(this);
         }
 
-        protected string FM = "F1";
+        new protected string FM = "F1";
 
         void Dump(GameObject target)
         {
