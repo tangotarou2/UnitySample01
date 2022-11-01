@@ -7,6 +7,7 @@ Assets/AssetStoreTools*
 ShaderCache/
 [Oo]ut/
 [Oo]utput/
+x64/
 batch
 .vscode
 Logs
