@@ -37,7 +37,8 @@ public class Player : MonoBehaviourPunCallbacks
 
     void Bind(Deck deck)
     {
-        if (m_deck.CountOfCard() >0) {
+        if (deck == null) return;
+        if (deck.CountOfCard() >0) {
             string field_name = "";
             if (PhotonNetwork.IsMasterClient) {
                 field_name = (photonView.IsMine) ? "Field_M" : "Field_C";
@@ -85,10 +86,9 @@ public class Player : MonoBehaviourPunCallbacks
 
             SyncCard(this.m_card, this.mp);
             SyncData(m_deck);
-            Bind(m_deck);
 
         }
-
+        Bind(m_deck);
     }
 
     //DeckをRPCで同期するためには、登録とSerialize関数が必要。
@@ -102,7 +102,7 @@ public class Player : MonoBehaviourPunCallbacks
     {
         count = deck.CountOfCard();
         m_deck = deck;
-        Bind(m_deck);
+ 
 
     }
 

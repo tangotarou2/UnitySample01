@@ -28,7 +28,7 @@ public class PhotonScene : MonoBehaviourPunCallbacks
     public override void OnJoinedRoom()
     {
         var position = new Vector3(Random.Range(-3f, 3f), Random.Range(-3f, 3f));
-        var prefabname = (PhotonNetwork.IsMasterClient)? "Player" : "Player";
+        var prefabname = (PhotonNetwork.IsMasterClient)? "Player" : "Player2";
 
         var gobj = PhotonNetwork.Instantiate(prefabname, position, Quaternion.identity);
         if (gobj) {
