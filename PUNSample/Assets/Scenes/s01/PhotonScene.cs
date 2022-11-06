@@ -12,9 +12,13 @@ public class PhotonScene : MonoBehaviourPunCallbacks
         PhotonNetwork.NickName = "MyPlayer";
         PhotonNetwork.ConnectUsingSettings();
 
-        ExitGames.Client.Photon.PhotonPeer.RegisterType(typeof(Deck), 0x41, Deck.Serialize, Deck.Deserialize);
-        ExitGames.Client.Photon.PhotonPeer.RegisterType(typeof(Card), 0x42, Card.Serialize, Card.Deserialize);
+        byte index = 0x41;
+        ExitGames.Client.Photon.PhotonPeer.RegisterType(typeof(Deck), index++, Deck.Serialize, Deck.Deserialize);
+        ExitGames.Client.Photon.PhotonPeer.RegisterType(typeof(Card), index++, Card.Serialize, Card.Deserialize);
+        ExitGames.Client.Photon.PhotonPeer.RegisterType(typeof(Ticket), index++, Ticket.Serialize, Ticket.Deserialize);
 
+
+        
     }
 
     public override void OnConnectedToMaster()
@@ -22,26 +26,36 @@ public class PhotonScene : MonoBehaviourPunCallbacks
         var option = new RoomOptions();
         option.PlayerTtl = ttl;
 
-        PhotonNetwork.JoinOrCreateRoom("Room", option, TypedLobby.Default);
+        var resutl = PhotonNetwork.JoinOrCreateRoom("Room", option, TypedLobby.Default);
+
+
     }
 
     public override void OnJoinedRoom()
     {
         var position = new Vector3(Random.Range(-3f, 3f), Random.Range(-3f, 3f));
-        var prefabname = (PhotonNetwork.IsMasterClient)? "Player" : "Player2";
 
-        var gobj = PhotonNetwork.Instantiate(prefabname, position, Quaternion.identity);
-        if (gobj) {
-            gobj.SetActive(true);
-            if ((PhotonNetwork.IsMasterClient)) {
-                gobj.transform.localPosition = new Vector3(0,-3f,0);
-                gobj.name = "Player_M";
-            } 
+        GameObject gobj = null;
+        var prefabname = (PhotonNetwork.IsMasterClient)? "PlayerMasterClient" : "Player";
+        if (PhotonNetwork.IsMasterClient) {
+
+            gobj = PhotonNetwork.Instantiate(prefabname, position, Quaternion.identity);
+            gobj.transform.position = new Vector3(10, 0, 0);
+
+            for (int i = 0; i< EntryTicket.ticket_max; i++) {
+                var ticketobj = PhotonNetwork.Instantiate("EntryTicket", Vector3.zero, Quaternion.identity);
+                var ticket = ticketobj.GetComponent<EntryTicket>();
+                ticket.SetNo(i+1);
+
+            }
+        } else {
+            gobj = PhotonNetwork.Instantiate(prefabname, position, Quaternion.identity);
+
         }
 
-        //if (PhotonNetwork.IsMasterClient){
-        //    PhotonNetwork.Instantiate("TestCode", position, Quaternion.identity);
-        //}
+        if (gobj) {
+            gobj.name = prefabname;
+        }
 
     }
 }

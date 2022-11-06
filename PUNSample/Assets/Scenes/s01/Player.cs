@@ -14,12 +14,13 @@ public class Player : MonoBehaviourPunCallbacks
     public int hp;
     public int mp;
     public int count;
+    public int ticket_no;
     public Deck m_deck = new Deck();
-    public Card m_card = new Card();
 
     void Start()
     {
         GameManager.instance.m_isMinePlayer  = this;
+
         name = photonView.Owner.NickName;
         punid = photonView.Owner.ActorNumber;
 
@@ -29,47 +30,66 @@ public class Player : MonoBehaviourPunCallbacks
             mp = UnityEngine.Random.Range(1, 100);
 
             m_deck.MakeDeck();
-            m_card.fixid = UnityEngine.Random.Range(1, 6);
 
         }
+        this.name = string.Format("{0}({1})", this.name, photonView.Owner.ActorNumber);
         StartCoroutine("SyncData");
+
+        //Coroutine _co = (Coroutine)EnterByTicket();
+        StartCoroutine("EnterByTicket");
+    }
+
+    int GetPhotonID(){
+        int id = photonView.Owner.ActorNumber;
+        return id;
+
+    }
+
+    IEnumerator EnterByTicket(){
+
+        while( true){
+            var result = PlayerMasterClient.instance.UseTicketFromID(GetPhotonID());
+            if (result)
+                break;
+            yield return new WaitForEndOfFrame();
+        }
+        yield return null;
+    }
+
+    string GetFieldName( int index ) {
+        string[] tbl_field = new string[]{
+            "Field_A",
+            "Field_B",
+            "Field_C",
+            "Field_D",
+        };
+        if (0 <= index && index < tbl_field.Length) {
+            return tbl_field[index];
+        }
+        return "";
     }
 
     void Bind(Deck deck)
     {
+
         if (deck == null) return;
         if (deck.CountOfCard() >0) {
-            string field_name = "";
-            if (PhotonNetwork.IsMasterClient) {
-                field_name = (photonView.IsMine) ? "Field_M" : "Field_C";
-            } else{
-                field_name = (photonView.IsMine) ? "Field_C" : "Field_M";
+
+            var ticket = PlayerMasterClient.instance.GetTicketFromID(GetPhotonID());
+            if (ticket == null) return;
+
+            var field = GameObject.Find(GetFieldName(ticket_no-1));
+            if (field!=null) {
+                var monsters = field.GetComponentsInChildren<DrawMonster>();
+                for (int i = 0; i < monsters.Length; i++) {
+                    Card card = deck.GetCard(i);
+                    monsters[i].SetData(card);
+                }
             }
-
-            var field = GameObject.Find(field_name);
-            var monsters = field.GetComponentsInChildren<DrawMonster>();
-            for (int i = 0; i < monsters.Length; i++) {
-                Card card = deck.GetCard(i);
-                monsters[i].SetData(card);
-            }
-
-            //var fs = GameObject.FindGameObjectsWithTag("Field");
-            //if (PhotonNetwork.IsMasterClient) {
-            //    //var searchField = (PhotonNetwork.IsMasterClient) ? "Field_M" : "Field_C";
-            //    foreach (var field in fs) {
-            //        if (field.name == searchField) {
-            //            var monsters = field.GetComponentsInChildren<DrawMonster>();
-            //            for (int i = 0; i < monsters.Length; i++) {
-            //                Card card = deck.GetCard(i);
-            //                monsters[i].SetData(card);
-
-            //            }
-            //        }
-            //    }
-            //}
         }
     }
 
+    #region sync
     public float span = 1f;
 
     IEnumerator SyncData()
@@ -81,12 +101,10 @@ public class Player : MonoBehaviourPunCallbacks
         }
     }
 
-    public void DoSync(){
+    public void DoSync()
+    {
         if (this.photonView.IsMine) {
-
-            SyncCard(this.m_card, this.mp);
             SyncData(m_deck);
-
         }
         Bind(m_deck);
     }
@@ -102,21 +120,14 @@ public class Player : MonoBehaviourPunCallbacks
     {
         count = deck.CountOfCard();
         m_deck = deck;
- 
-
-    }
-
-    void SyncCard(Card val, int mp)
-    {
-        photonView.RPC("RPCSyncCard", RpcTarget.All, val, mp);
     }
 
     [PunRPC]
     private void RPCSyncCard(Card val, int mp)
     {
-        m_card =val;
         this.mp = mp;
     }
+    #endregion
 
     void SetName(string name){
         this.name = name;
@@ -135,9 +146,12 @@ public class Player : MonoBehaviourPunCallbacks
         string infomsg = "";
         infomsg += string.Format("{0},hp:{1} mp:{2}\n", this.name, this.hp, this.mp);
 
-        if (this.m_card!=null) {
-            infomsg += string.Format("card : {0}\n", this.m_card.GetFixID());
+        var ticket = PlayerMasterClient.instance.GetTicketFromID(GetPhotonID());
+        if (ticket != null) {
+            this.ticket_no = ticket.GetNo();
+            infomsg += string.Format("seat_no : {0}\n", ticket_no);
         }
+        
 
 
         int numofcard = m_deck.CountOfCard();

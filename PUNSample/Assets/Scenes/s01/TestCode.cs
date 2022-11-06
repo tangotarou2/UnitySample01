@@ -78,7 +78,7 @@ public class TestCode : MonoBehaviourPunCallbacks
             m_buttonSync = GameObject.Find("SyncButton").GetComponent<Button>();
             if (m_buttonSync!=null) {
                 m_buttonSync.onClick.AddListener(() => {
-                    GameManager.instance.m_isMinePlayer.DoSync();
+                   // GameManager.instance.m_isMinePlayer.DoSync();
 
                 });
             }
